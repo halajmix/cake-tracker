@@ -1,165 +1,220 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
 <title>Cake Profit Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Cairo:wght@500;700;800&display=swap">
 <style>
-  :root{--bg:#f2f3f1;--card:#ffffff;--ink:#1f2421;--muted:#6b716c;--line:#dcdfda;--accent:#7a2e4a;--accent-ink:#ffffff;--good:#1f7a4d;--bad:#b3261e;--soft:#eceee9;--warnbg:#fff4d6;--warnink:#6b4e00;--big-bg:#1f2421;--big-fg:#f2f3f1;--big-muted:#b9c0ba;--big-good:#7fe0a4;--big-bad:#ff8a7a;color-scheme:light}
-  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181a;--card:#1e2225;--ink:#e9ebe7;--muted:#9aa19b;--line:#2c3236;--accent:#5e2239;--accent-ink:#f6e4ea;--good:#5fcf8a;--bad:#ff8a7a;--soft:#262b2e;--warnbg:#3a2f10;--warnink:#f2d27a;--big-bg:#0b0d0e;--big-fg:#e9ebe7;--big-muted:#8d948f;--big-good:#7fe0a4;--big-bad:#ff8a7a;color-scheme:dark}}
-  :root[data-theme="dark"]{--bg:#15181a;--card:#1e2225;--ink:#e9ebe7;--muted:#9aa19b;--line:#2c3236;--accent:#5e2239;--accent-ink:#f6e4ea;--good:#5fcf8a;--bad:#ff8a7a;--soft:#262b2e;--warnbg:#3a2f10;--warnink:#f2d27a;--big-bg:#0b0d0e;--big-fg:#e9ebe7;--big-muted:#8d948f;--big-good:#7fe0a4;--big-bad:#ff8a7a;color-scheme:dark}
+  :root{
+    --bg:#fff6ee;--card:#ffffff;--ink:#3a2a3a;--muted:#8a7386;--line:#f3dfe3;
+    --pink:#ff5f8f;--orange:#ff9a3c;--lemon:#ffcf5c;--mint:#5ed3a8;--sky:#6ea8ff;--grape:#7c4dff;
+    --good:#1f9d55;--bad:#e0245e;--soft:#fff3f6;
+    --t1:#fff1c9;--t2:#ffe0ea;--t3:#dff7ee;--t4:#e3ecff;--t5:#efe3ff;
+    color-scheme:light;
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
-  header{background:var(--accent);color:var(--accent-ink);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-  header h1{margin:0;font-size:22px}
-  header .actions button{background:var(--card);color:var(--accent);border:0;padding:8px 12px;border-radius:6px;font-weight:600;cursor:pointer;margin-left:6px}
+  html{background:var(--bg)}
+  body{margin:0;font-family:"Nunito","Cairo",-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px}
+  html[lang="ar"] body{font-family:"Cairo","Nunito",-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{background:linear-gradient(120deg,var(--pink),var(--orange));color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 6px 24px rgba(255,95,143,.25)}
+  header h1{margin:0;font-size:24px;font-weight:800;letter-spacing:.2px}
+  header .actions{display:flex;gap:6px;flex-wrap:wrap}
+  header .actions button{background:#fff;color:var(--pink);border:0;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  header .actions button.lang{background:rgba(255,255,255,.22);color:#fff;border:2px solid #fff}
   main{max-width:1200px;margin:0 auto;padding:20px}
-  section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:20px}
-  h2{margin:0 0 12px;font-size:17px}
+  section{background:var(--card);border-radius:16px;padding:18px;margin-bottom:20px;box-shadow:0 4px 18px rgba(60,30,60,.06);border-top:6px solid var(--lemon)}
+  section.s2{border-top-color:var(--pink)} section.s3{border-top-color:var(--mint)} section.s4{border-top-color:var(--sky)}
+  h2{margin:0 0 10px;font-size:18px;font-weight:800}
+  section h2{color:#d99a00} section.s2 h2{color:var(--pink)} section.s3 h2{color:#1fa37a} section.s4 h2{color:#2f6fe0}
   .hint{color:var(--muted);font-size:13px;margin:0 0 12px}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:600}
-  input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:var(--card);color:var(--ink);font-family:inherit}
-  input[type=number],.calc,.tile .v,tfoot td,#salesTable td{font-family:"IBM Plex Mono","SF Mono",Menlo,monospace;font-variant-numeric:tabular-nums}
-  input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-  input[type=number]{text-align:right}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
-  th{font-size:12px;color:var(--muted);font-weight:600;background:var(--soft);position:sticky;top:0}
-  th:first-child,td:first-child{text-align:left}
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700}
+  input,select{width:100%;padding:9px 10px;border:2px solid var(--line);border-radius:10px;font-size:14px;background:#fff;color:var(--ink);font-family:inherit}
+  input:focus,select:focus,button:focus-visible{outline:none;border-color:var(--sky);box-shadow:0 0 0 3px rgba(110,168,255,.25)}
+  input[type=number]{text-align:end;font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:end;white-space:nowrap}
+  th{font-size:12px;color:var(--muted);font-weight:800;background:var(--soft);position:sticky;top:0}
+  th small{font-weight:500}
+  th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:start}
+  #salesTable th:nth-child(2),#salesTable td:nth-child(2){text-align:start}
   td input{min-width:80px;padding:6px}
-  td input.name{min-width:130px;text-align:left}
-  .calc{font-weight:600}
+  td input.name{min-width:130px;text-align:start}
+  .calc{font-weight:800;font-variant-numeric:tabular-nums}
   .good{color:var(--good)}.bad{color:var(--bad)}
-  .scroll{overflow-x:auto}
-  button.add{background:var(--accent);color:var(--accent-ink);border:0;padding:9px 14px;border-radius:6px;cursor:pointer;font-weight:600;margin-top:10px}
-  button.del{background:transparent;border:1px solid var(--line);color:var(--bad);border-radius:6px;padding:4px 8px;cursor:pointer}
+  .scroll{overflow-x:auto;border-radius:10px}
+  button.add{background:linear-gradient(120deg,var(--pink),var(--orange));color:#fff;border:0;padding:10px 16px;border-radius:999px;cursor:pointer;font-weight:800;margin-top:10px;font-family:inherit;box-shadow:0 4px 12px rgba(255,95,143,.3)}
+  button.del{background:#fff;border:2px solid var(--line);color:var(--bad);border-radius:999px;padding:3px 9px;cursor:pointer;font-weight:800}
   .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:8px}
-  .tile{background:var(--soft);border-radius:8px;padding:12px}
-  .tile .l{font-size:12px;color:var(--muted);font-weight:600}
-  .tile .v{font-size:22px;font-weight:700;margin-top:4px}
-  .tile.big{background:var(--big-bg);color:var(--big-fg)}
-  .tile.big .l{color:var(--big-muted)}
-  .tile.big .v.good{color:var(--big-good)}.tile.big .v.bad{color:var(--big-bad)}
+  .tile{border-radius:14px;padding:14px;background:var(--t1)}
+  .tile:nth-child(5n+2){background:var(--t2)} .tile:nth-child(5n+3){background:var(--t3)} .tile:nth-child(5n+4){background:var(--t4)} .tile:nth-child(5n+5){background:var(--t5)}
+  .tile .l{font-size:12px;color:#6d5a6a;font-weight:800}
+  .tile .v{font-size:22px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+  .tile.big{background:linear-gradient(120deg,var(--grape),var(--pink));color:#fff}
+  .tile.big .l{color:rgba(255,255,255,.85)}
+  .tile.big .v.good{color:#d4ffe1}.tile.big .v.bad{color:#ffd6de}
   .row{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
   .row > div{flex:1;min-width:140px}
-  tfoot td{font-weight:700;background:var(--soft)}
+  tfoot td{font-weight:800;background:var(--soft)}
   tr.inactive td{opacity:.45}
-  #modeBanner{background:var(--warnbg);border:1px solid var(--line);color:var(--warnink)}
-  th small{font-weight:400}
   tr.inactive td:first-child{opacity:1}
-  td input[type=checkbox]{width:18px;height:18px;min-width:0;cursor:pointer}
-  .warn{color:var(--bad);font-weight:700}
-  @media(max-width:600px){main{padding:10px}section{padding:12px}}
-  #login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
-  #login .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;width:100%;max-width:360px;display:grid;gap:12px}
-  #login h1{margin:0 0 4px;font-size:22px}
+  td input[type=checkbox]{width:20px;height:20px;min-width:0;cursor:pointer;accent-color:var(--pink)}
+  .warn{color:var(--bad);font-weight:800}
+  #modeBanner{background:#fff4d6;border:2px solid var(--lemon);color:#6b4e00;padding:10px 14px;border-radius:12px;margin-bottom:16px;font-size:14px}
+  #login{position:fixed;inset:0;background:linear-gradient(135deg,#ffe0ea,#fff1c9 50%,#dff7ee);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+  #login .box{background:#fff;border-radius:20px;padding:30px;width:100%;max-width:380px;display:grid;gap:12px;box-shadow:0 12px 40px rgba(255,95,143,.25)}
+  #login h1{margin:0 0 4px;font-size:24px;font-weight:800;color:var(--pink)}
   #login p{margin:0;color:var(--muted);font-size:14px}
-  #login .err{color:var(--bad);font-size:13px;min-height:18px}
+  #login .err{color:var(--bad);font-size:13px;min-height:18px;font-weight:700}
+  #login .lang{background:none;border:0;color:var(--sky);font-weight:800;cursor:pointer;font-family:inherit;justify-self:start;padding:0}
   #app[hidden]{display:none}
-  .who{font-size:12px;opacity:.85;margin-right:8px}
+  .who{font-size:12px;opacity:.9;margin-inline-end:8px}
+  #saveStatus{font-size:13px;font-weight:700}
+  @media(max-width:600px){main{padding:10px}section{padding:12px}}
 </style>
 </head>
 <body>
 <div id="login">
   <form class="box" onsubmit="doLogin(event)">
-    <h1>🎂 Cake Profit Tracker</h1>
-    <p>Sign in with the email and password you were given.</p>
-    <div><label>Email</label><input id="lEmail" type="email" autocomplete="username" required></div>
-    <div><label>Password</label><input id="lPass" type="password" autocomplete="current-password" required></div>
+    <h1>🎂 <span data-i18n="title">Cake Profit Tracker</span></h1>
+    <p data-i18n="loginHint">Sign in with the email and password you were given.</p>
+    <div><label data-i18n="email">Email</label><input id="lEmail" type="email" autocomplete="username" required></div>
+    <div><label data-i18n="password">Password</label><input id="lPass" type="password" autocomplete="current-password" required></div>
     <div class="err" id="lErr"></div>
-    <button class="add" style="margin:0" id="lBtn" type="submit">Sign in</button>
+    <button class="add" style="margin:0" id="lBtn" type="submit" data-i18n="signIn">Sign in</button>
+    <button type="button" class="lang" onclick="toggleLang()" data-i18n="langBtn">عربي</button>
   </form>
 </div>
 <div id="app" hidden>
 <header>
-  <h1>🎂 Cake Profit Tracker</h1>
-  <div><span class="who" id="who"></span><span id="saveStatus" style="font-size:13px;opacity:.95"></span></div>
+  <h1>🎂 <span data-i18n="title">Cake Profit Tracker</span></h1>
+  <div><span class="who" id="who"></span><span id="saveStatus"></span></div>
   <div class="actions">
-    <button onclick="exportData()">Export backup</button>
-    <button onclick="document.getElementById('importFile').click()">Import</button>
+    <button class="lang" onclick="toggleLang()" data-i18n="langBtn">عربي</button>
+    <button onclick="exportData()" data-i18n="export">Export backup</button>
+    <button onclick="document.getElementById('importFile').click()" data-i18n="import">Import</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)">
-    <button onclick="resetAll()">Reset</button>
-    <button onclick="doLogout()">Sign out</button>
+    <button onclick="resetAll()" data-i18n="reset">Reset</button>
+    <button onclick="doLogout()" data-i18n="signOut">Sign out</button>
   </div>
 </header>
 <main>
-<div id="modeBanner" style="display:none;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:14px"></div>
+<div id="modeBanner" style="display:none"></div>
 
-<section>
-  <h2>1. Business settings</h2>
-  <p class="hint">Fixed costs you pay every month no matter how many cakes you sell.</p>
+<section class="s1">
+  <h2>🧾 <span data-i18n="s1">1. Business settings</span></h2>
+  <p class="hint" data-i18n="s1hint">Fixed costs you pay every month no matter how many cakes you sell.</p>
   <div class="grid">
-    <div><label>Currency</label><input id="currency" placeholder="OMR"></div>
-    <div><label>Shelf rent / month</label><input id="rent" type="number" step="0.001" min="0"></div>
-    <div><label>Other fixed costs / month (transport, packaging stock, etc.)</label><input id="fixed" type="number" step="0.001" min="0"></div>
-    <div><label>Days in month</label><input id="days" type="number" step="1" min="1"></div>
+    <div><label data-i18n="currency">Currency</label><input id="currency" placeholder="OMR"></div>
+    <div><label data-i18n="rent">Shelf rent / month</label><input id="rent" type="number" step="0.001" min="0"></div>
+    <div><label data-i18n="fixed">Other fixed costs / month (transport, packaging stock, etc.)</label><input id="fixed" type="number" step="0.001" min="0"></div>
+    <div><label data-i18n="days">Days in month</label><input id="days" type="number" step="1" min="1"></div>
   </div>
 </section>
 
-<section>
-  <h2>2. Cakes — cost, price & profit per cake</h2>
-  <p class="hint">Enter your costs per <b>one cake</b>. <b>Made</b> and <b>Sold</b> are for your last 3-day cycle; cakes made but not sold count as a loss (their cost is spent). Untick <b>Active</b> to leave a cake out of all totals without deleting it. The monthly projection multiplies the 3-day result by (days in month ÷ 3).</p>
+<section class="s2">
+  <h2>🧁 <span data-i18n="s2">2. Cakes — cost, price &amp; profit per cake</span></h2>
+  <p class="hint" data-i18n="s2hint">Enter your costs per <b>one cake</b>. <b>Made</b> and <b>Sold</b> are for your last 3-day cycle; cakes made but not sold count as a loss (their cost is spent). Untick <b>Active</b> to leave a cake out of all totals without deleting it. The monthly projection multiplies the 3-day result by (days in month ÷ 3).</p>
   <div class="scroll">
   <table id="cakeTable">
     <thead><tr>
-      <th>Active</th>
-      <th>Cake</th>
-      <th>Ingredients / cake</th>
-      <th>Cooking cost / cake<br><small>gas, electricity, labour</small></th>
-      <th>Packaging / cake</th>
-      <th>Selling price</th>
-      <th>Made in 3 days</th>
-      <th>Sold in 3 days</th>
-      <th>Unsold</th>
-      <th>Total cost / cake</th>
-      <th>Profit / sold cake</th>
-      <th>Margin</th>
-      <th>3-day revenue</th>
-      <th>Loss from unsold</th>
-      <th>3-day profit<br><small>after unsold loss</small></th>
-      <th>Projected month profit</th>
+      <th data-i18n="active">Active</th>
+      <th data-i18n="cake">Cake</th>
+      <th data-i18n="ing">Ingredients / cake</th>
+      <th data-i18n="cook">Cooking cost / cake<br><small>gas, electricity, labour</small></th>
+      <th data-i18n="pack">Packaging / cake</th>
+      <th data-i18n="price">Selling price</th>
+      <th data-i18n="made3">Made in 3 days</th>
+      <th data-i18n="sold3">Sold in 3 days</th>
+      <th data-i18n="unsold">Unsold</th>
+      <th data-i18n="costCake">Total cost / cake</th>
+      <th data-i18n="profitCake">Profit / sold cake</th>
+      <th data-i18n="margin">Margin</th>
+      <th data-i18n="rev3">3-day revenue</th>
+      <th data-i18n="lossUnsold">Loss from unsold</th>
+      <th data-i18n="prof3">3-day profit<br><small>after unsold loss</small></th>
+      <th data-i18n="month">Projected month profit</th>
       <th></th>
     </tr></thead>
     <tbody></tbody>
     <tfoot></tfoot>
   </table>
   </div>
-  <button class="add" onclick="addCake()">+ Add cake</button>
+  <button class="add" onclick="addCake()" data-i18n="addCake">+ Add cake</button>
 </section>
 
-<section>
-  <h2>3. Monthly projection (from your 3-day rate, active cakes only)</h2>
+<section class="s3">
+  <h2>📈 <span data-i18n="s3">3. Monthly projection (from your 3-day rate, active cakes only)</span></h2>
   <div class="tiles" id="projTiles"></div>
   <p class="hint" id="breakEven" style="margin-top:12px"></p>
 </section>
 
-<section>
-  <h2>4. Sales log — actual profit &amp; loss by month</h2>
-  <p class="hint">Optional: record what you actually made and sold each day. Leave <b>Made</b> empty if it equals Sold. The summary below uses real numbers instead of a projection.</p>
+<section class="s4">
+  <h2>📒 <span data-i18n="s4">4. Sales log — actual profit &amp; loss by month</span></h2>
+  <p class="hint" data-i18n="s4hint">Optional: record what you actually made and sold each day. Leave <b>Made</b> empty if it equals Sold. The summary below uses real numbers instead of a projection.</p>
   <div class="row">
-    <div><label>Date</label><input id="sDate" type="date"></div>
-    <div><label>Cake</label><select id="sCake"></select></div>
-    <div><label>Made</label><input id="sMade" type="number" min="0" step="1" placeholder="= sold"></div>
-    <div><label>Sold</label><input id="sQty" type="number" min="0" step="1" value="1"></div>
-    <div style="flex:0"><button class="add" style="margin:0" onclick="addSale()">+ Add entry</button></div>
+    <div><label data-i18n="date">Date</label><input id="sDate" type="date"></div>
+    <div><label data-i18n="cake">Cake</label><select id="sCake"></select></div>
+    <div><label data-i18n="made">Made</label><input id="sMade" type="number" min="0" step="1" data-i18n-ph="eqSold" placeholder="= sold"></div>
+    <div><label data-i18n="sold">Sold</label><input id="sQty" type="number" min="0" step="1" value="1"></div>
+    <div style="flex:0"><button class="add" style="margin:0" onclick="addSale()" data-i18n="addEntry">+ Add entry</button></div>
   </div>
   <div class="row" style="margin-top:16px">
-    <div style="flex:0;min-width:200px"><label>Show month</label><select id="monthSel" onchange="render()"></select></div>
+    <div style="flex:0;min-width:200px"><label data-i18n="showMonth">Show month</label><select id="monthSel" onchange="render()"></select></div>
   </div>
   <div class="tiles" id="actualTiles"></div>
   <div class="scroll" style="margin-top:14px">
     <table id="salesTable">
-      <thead><tr><th>Date</th><th>Cake</th><th>Made</th><th>Sold</th><th>Unsold</th><th>Revenue</th><th>Cost of made</th><th>Loss from unsold</th><th>Profit</th><th></th></tr></thead>
+      <thead><tr><th data-i18n="date">Date</th><th data-i18n="cake">Cake</th><th data-i18n="made">Made</th><th data-i18n="sold">Sold</th><th data-i18n="unsold">Unsold</th><th data-i18n="revenue">Revenue</th><th data-i18n="costMade">Cost of made</th><th data-i18n="lossUnsold">Loss from unsold</th><th data-i18n="profit">Profit</th><th></th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
 </section>
 
 </main>
+</div>
 <script>
+// ---------- languages ----------
+const T={
+en:{title:'Cake Profit Tracker',loginHint:'Sign in with the email and password you were given.',email:'Email',password:'Password',signIn:'Sign in',langBtn:'عربي',
+ export:'Export backup',import:'Import',reset:'Reset',signOut:'Sign out',
+ s1:'1. Business settings',s1hint:'Fixed costs you pay every month no matter how many cakes you sell.',currency:'Currency',rent:'Shelf rent / month',fixed:'Other fixed costs / month (transport, packaging stock, etc.)',days:'Days in month',
+ s2:'2. Cakes — cost, price &amp; profit per cake',s2hint:'Enter your costs per <b>one cake</b>. <b>Made</b> and <b>Sold</b> are for your last 3-day cycle; cakes made but not sold count as a loss (their cost is spent). Untick <b>Active</b> to leave a cake out of all totals without deleting it. The monthly projection multiplies the 3-day result by (days in month ÷ 3).',
+ active:'Active',cake:'Cake',ing:'Ingredients / cake',cook:'Cooking cost / cake<br><small>gas, electricity, labour</small>',pack:'Packaging / cake',price:'Selling price',made3:'Made in 3 days',sold3:'Sold in 3 days',unsold:'Unsold',costCake:'Total cost / cake',profitCake:'Profit / sold cake',margin:'Margin',rev3:'3-day revenue',lossUnsold:'Loss from unsold',prof3:'3-day profit<br><small>after unsold loss</small>',month:'Projected month profit',addCake:'+ Add cake',totalActive:'Total (active)',newCake:'New cake',
+ s3:'3. Monthly projection (from your 3-day rate, active cakes only)',madeM:'Cakes made / month',soldM:'Cakes sold / month',unsoldM:'Unsold cakes / month',loss:'loss',revM:'Revenue / month',grossM:'Gross profit / month<br><small>after unsold loss</small>',rentFixed:'Shelf rent + fixed costs',netProfit:'NET PROFIT / month',netLoss:'NET LOSS / month',
+ breakEven:(cakes,per3,avg,w)=>`<b>Break-even:</b> you need to sell about <b>${cakes} cakes / month</b> (≈ ${per3} per 3 days) just to cover rent and fixed costs, at an average net profit of ${avg} per sold cake${w?' (after unsold losses)':''}.`,
+ noActive:'No active cakes. Tick "Active" on at least one cake.',enterPrices:'Enter prices and costs to see your break-even point.',
+ s4:'4. Sales log — actual profit &amp; loss by month',s4hint:'Optional: record what you actually made and sold each day. Leave <b>Made</b> empty if it equals Sold. The summary below uses real numbers instead of a projection.',date:'Date',made:'Made',sold:'Sold',eqSold:'= sold',addEntry:'+ Add entry',showMonth:'Show month',
+ cakesMade:'Cakes made',cakesSold:'Cakes sold',unsoldCakes:'Unsold cakes',revenue:'Revenue',costAllMade:'Cost of all cakes made',gross:'Gross profit',rentFixed2:'Rent + fixed costs',actualNetProfit:'ACTUAL NET PROFIT',actualNetLoss:'ACTUAL NET LOSS',costMade:'Cost of made',profit:'Profit',noEntries:'No entries recorded for this month yet.',deleted:'(deleted)',
+ saving:'Saving…',saved:'✓ Saved',notSaved:'⚠ NOT SAVED — ',retrying:'Retrying…',loading:'Loading…',loaded:'✓ Loaded',updated:'↻ Updated',by:'by',couldNotLoad:'⚠ Could not load: ',wrongLogin:'Wrong email or password.',notConnected:'This copy is not connected to a database yet.',
+ confirmDelCake:'Delete this cake? Its sales log entries will be removed too.\n(Tip: untick Active instead to keep it but exclude it from totals.)',confirmReset:'Delete ALL cakes, settings and sales? This cannot be undone.',confirmImport:'Replace everything on screen with the backup file ',invalidBackup:'Invalid backup file',pickAll:'Pick a date, a cake and how many were made / sold.',locale:'en'},
+ar:{title:'حاسبة أرباح الكيك',loginHint:'سجّل الدخول بالبريد وكلمة المرور التي أُعطيت لك.',email:'البريد الإلكتروني',password:'كلمة المرور',signIn:'تسجيل الدخول',langBtn:'English',
+ export:'تصدير نسخة احتياطية',import:'استيراد',reset:'مسح الكل',signOut:'تسجيل الخروج',
+ s1:'١. إعدادات المشروع',s1hint:'التكاليف الثابتة التي تدفعها كل شهر مهما كان عدد الكيك المباع.',currency:'العملة',rent:'إيجار الرف / شهر',fixed:'تكاليف ثابتة أخرى / شهر (نقل، مخزون تغليف، إلخ)',days:'عدد أيام الشهر',
+ s2:'٢. الكيك — التكلفة والسعر والربح لكل كيكة',s2hint:'أدخل التكاليف لكل <b>كيكة واحدة</b>. <b>المصنوع</b> و<b>المباع</b> لآخر دورة ٣ أيام؛ الكيك المصنوع غير المباع يُحسب خسارة (تكلفته مدفوعة). أزل علامة <b>نشط</b> لاستبعاد كيكة من كل الحسابات دون حذفها. التوقع الشهري يضرب نتيجة ٣ أيام في (أيام الشهر ÷ ٣).',
+ active:'نشط',cake:'الكيكة',ing:'المكونات / كيكة',cook:'تكلفة الطهي / كيكة<br><small>غاز، كهرباء، عمالة</small>',pack:'التغليف / كيكة',price:'سعر البيع',made3:'المصنوع في ٣ أيام',sold3:'المباع في ٣ أيام',unsold:'غير مباع',costCake:'إجمالي التكلفة / كيكة',profitCake:'الربح / كيكة مباعة',margin:'هامش الربح',rev3:'إيراد ٣ أيام',lossUnsold:'خسارة غير المباع',prof3:'ربح ٣ أيام<br><small>بعد خسارة غير المباع</small>',month:'الربح الشهري المتوقع',addCake:'+ إضافة كيكة',totalActive:'الإجمالي (النشط)',newCake:'كيكة جديدة',
+ s3:'٣. التوقع الشهري (من معدل ٣ أيام، الكيك النشط فقط)',madeM:'كيك مصنوع / شهر',soldM:'كيك مباع / شهر',unsoldM:'كيك غير مباع / شهر',loss:'خسارة',revM:'الإيراد / شهر',grossM:'إجمالي الربح / شهر<br><small>بعد خسارة غير المباع</small>',rentFixed:'إيجار الرف + التكاليف الثابتة',netProfit:'صافي الربح / شهر',netLoss:'صافي الخسارة / شهر',
+ breakEven:(cakes,per3,avg,w)=>`<b>نقطة التعادل:</b> تحتاج لبيع حوالي <b>${cakes} كيكة / شهر</b> (≈ ${per3} كل ٣ أيام) لتغطية الإيجار والتكاليف الثابتة فقط، بمتوسط ربح صافٍ ${avg} لكل كيكة مباعة${w?' (بعد خسائر غير المباع)':''}.`,
+ noActive:'لا توجد كيكات نشطة. فعّل «نشط» لكيكة واحدة على الأقل.',enterPrices:'أدخل الأسعار والتكاليف لمعرفة نقطة التعادل.',
+ s4:'٤. سجل المبيعات — الربح والخسارة الفعلية بالشهر',s4hint:'اختياري: سجّل ما صنعته وبعته فعلياً كل يوم. اترك <b>المصنوع</b> فارغاً إن كان يساوي المباع. الملخص أدناه يستخدم الأرقام الفعلية بدل التوقع.',date:'التاريخ',made:'المصنوع',sold:'المباع',eqSold:'= المباع',addEntry:'+ إضافة سجل',showMonth:'عرض الشهر',
+ cakesMade:'كيك مصنوع',cakesSold:'كيك مباع',unsoldCakes:'كيك غير مباع',revenue:'الإيراد',costAllMade:'تكلفة كل الكيك المصنوع',gross:'إجمالي الربح',rentFixed2:'الإيجار + التكاليف الثابتة',actualNetProfit:'صافي الربح الفعلي',actualNetLoss:'صافي الخسارة الفعلية',costMade:'تكلفة المصنوع',profit:'الربح',noEntries:'لا توجد سجلات لهذا الشهر بعد.',deleted:'(محذوف)',
+ saving:'جارٍ الحفظ…',saved:'✓ تم الحفظ',notSaved:'⚠ لم يُحفظ — ',retrying:'إعادة المحاولة…',loading:'جارٍ التحميل…',loaded:'✓ تم التحميل',updated:'↻ تم التحديث',by:'بواسطة',couldNotLoad:'⚠ تعذر التحميل: ',wrongLogin:'البريد أو كلمة المرور غير صحيحة.',notConnected:'هذه النسخة غير متصلة بقاعدة بيانات بعد.',
+ confirmDelCake:'حذف هذه الكيكة؟ ستُحذف سجلات مبيعاتها أيضاً.\n(نصيحة: أزل علامة «نشط» بدلاً من ذلك لإبقائها مع استبعادها من الحسابات.)',confirmReset:'حذف كل الكيك والإعدادات والمبيعات؟ لا يمكن التراجع.',confirmImport:'استبدال كل ما على الشاشة بملف النسخة الاحتياطية ',invalidBackup:'ملف نسخة احتياطية غير صالح',pickAll:'اختر التاريخ والكيكة وعدد المصنوع / المباع.',locale:'ar-u-nu-latn'}
+};
+let LANG='en';try{LANG=localStorage.getItem('cakeLang')||'en'}catch(e){}
+const t=k=>T[LANG][k]!==undefined?T[LANG][k]:T.en[k];
+function applyLang(){
+  document.documentElement.lang=LANG;document.documentElement.dir=LANG==='ar'?'rtl':'ltr';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.innerHTML=t(el.dataset.i18n)});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh)});
+  document.title=t('title');
+}
+function toggleLang(){LANG=LANG==='en'?'ar':'en';try{localStorage.setItem('cakeLang',LANG)}catch(e){};applyLang();if(USER)render();}
+
+// ---------- data ----------
 const KEY='cakeProfitData_v1';
 const defaults=()=>({
   settings:{currency:'OMR',rent:0,fixed:0,days:30},
@@ -175,12 +230,13 @@ let D=loadLocal();
 const SUPABASE_URL='https://ukwriedfkxxovklfosre.supabase.co', SUPABASE_KEY='sb_publishable_W1hJxw1rG15HasxsXw_uzA_8AWOv2NY', ROW='main';
 let SB=null, USER=null, saveTimer=null, dirty=false, lastRemote='';
 function loadLocal(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s)}catch(e){}return defaults()}
-function status(msg,bad){const el=document.getElementById('saveStatus');el.textContent=msg;el.style.color=bad?'#ffd0c8':'inherit';el.style.fontWeight=bad?'700':'400'}
+function status(msg,bad){const el=document.getElementById('saveStatus');el.textContent=msg;el.style.color=bad?'#fff1c9':'#fff';el.style.textDecoration=bad?'underline':'none'}
 function banner(html){const b=document.getElementById('modeBanner');b.style.display='block';b.innerHTML=html}
+function timeNow(){return new Date().toLocaleTimeString(t('locale'),{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
 function save(){
   try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}
   if(!USER)return;
-  dirty=true;status('Saving…');
+  dirty=true;status(t('saving'));
   clearTimeout(saveTimer);saveTimer=setTimeout(saveToCloud,500);
 }
 async function saveToCloud(){
@@ -189,31 +245,32 @@ async function saveToCloud(){
     const {error}=await SB.from('app_state').upsert(payload);
     if(error)throw error;
     lastRemote=JSON.stringify(D);
-    dirty=false;status('✓ Saved '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  }catch(e){status('⚠ NOT SAVED — '+(e&&e.message||'no connection')+'. Retrying…',true);clearTimeout(saveTimer);saveTimer=setTimeout(saveToCloud,5000);}
+    dirty=false;status(t('saved')+' '+timeNow());
+  }catch(e){status(t('notSaved')+(e&&e.message||'no connection')+'. '+t('retrying'),true);clearTimeout(saveTimer);saveTimer=setTimeout(saveToCloud,5000);}
 }
 window.addEventListener('beforeunload',e=>{if(USER&&dirty){e.preventDefault();e.returnValue='';}});
 function applyRemote(row,label){
   if(!row||!row.data||!row.data.cakes)return;
   const j=JSON.stringify(row.data);
   if(j===lastRemote)return;
-  if(dirty)return; // our own unsaved edit wins; it will be pushed shortly
+  if(dirty)return;
   const a=document.activeElement;if(a&&(a.tagName==='INPUT'||a.tagName==='SELECT')){setTimeout(()=>applyRemote(row,label),3000);return}
   lastRemote=j;D=JSON.parse(j);try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){};render();
-  if(label)status(label+(row.updated_by?' by '+row.updated_by:''));
+  if(label)status(label+(row.updated_by?' '+t('by')+' '+row.updated_by:''));
 }
 async function loadCloud(){
-  status('Loading…');
+  status(t('loading'));
   const {data:row,error}=await SB.from('app_state').select('data,updated_by').eq('id',ROW).maybeSingle();
-  if(error){status('⚠ Could not load: '+error.message,true);return}
-  if(row){applyRemote(row);status('✓ Loaded');}
-  else{await saveToCloud();} // first ever run: create the shared record from this browser
-  SB.channel('app_state').on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.'+ROW},p=>applyRemote(p.new,'↻ Updated')).subscribe();
+  if(error){status(t('couldNotLoad')+error.message,true);return}
+  if(row){applyRemote(row);status(t('loaded'));}
+  else{await saveToCloud();}
+  SB.channel('app_state').on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.'+ROW},p=>applyRemote(p.new,t('updated'))).subscribe();
 }
 // ---------- auth ----------
 async function showApp(session){
   USER=session.user;document.getElementById('who').textContent=USER.email;
   document.getElementById('login').style.display='none';document.getElementById('app').hidden=false;
+  render();
   await loadCloud();
 }
 async function doLogin(ev){
@@ -221,24 +278,26 @@ async function doLogin(ev){
   btn.disabled=true;err.textContent='';
   const {data,error}=await SB.auth.signInWithPassword({email:document.getElementById('lEmail').value.trim(),password:document.getElementById('lPass').value});
   btn.disabled=false;
-  if(error){err.textContent=error.message==='Invalid login credentials'?'Wrong email or password.':error.message;return}
+  if(error){err.textContent=error.message==='Invalid login credentials'?t('wrongLogin'):error.message;return}
   showApp(data.session);
 }
 async function doLogout(){if(dirty){await saveToCloud()}await SB.auth.signOut();try{localStorage.removeItem(KEY)}catch(e){};location.reload()}
 async function initStorage(){
-  if(SUPABASE_URL.startsWith('__')){document.getElementById('lErr').textContent='This copy is not connected to a database yet.';return}
+  if(SUPABASE_URL.startsWith('__')){document.getElementById('lErr').textContent=t('notConnected');return}
   SB=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   const {data:{session}}=await SB.auth.getSession();
   if(session)showApp(session);
   SB.auth.onAuthStateChange((ev,s)=>{if(ev==='SIGNED_OUT'){location.reload()}});
 }
+// ---------- helpers ----------
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const n=v=>{const x=parseFloat(v);return isNaN(x)?0:x};
-const fmt=v=>{const c=D.settings.currency||'';const dec=(c.toUpperCase()==='OMR'||c.toUpperCase()==='KWD'||c.toUpperCase()==='BHD')?3:2;return (v<0?'-':'')+Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec})+(c?' '+c:'')};
+const fmt=v=>{const c=D.settings.currency||'';const dec=(c.toUpperCase()==='OMR'||c.toUpperCase()==='KWD'||c.toUpperCase()==='BHD')?3:2;return (v<0?'-':'')+Math.abs(v).toLocaleString('en',{minimumFractionDigits:dec,maximumFractionDigits:dec})+(c?' '+c:'')};
 const pct=v=>isFinite(v)?(v*100).toFixed(1)+'%':'—';
 const cls=v=>v>0?'good':v<0?'bad':'';
 const cost=c=>n(c.ing)+n(c.cook)+n(c.pack);
 const profit=c=>n(c.price)-cost(c);
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 
 // ---------- settings ----------
 const SETTING_KEYS=['currency','rent','fixed','days'];
@@ -247,17 +306,15 @@ SETTING_KEYS.forEach(k=>{
   const el=document.getElementById(k);
   el.addEventListener('input',()=>{D.settings[k]=k==='currency'?el.value:n(el.value);save();renderCakes()});
 });
-fillSettings();
 
 // ---------- cakes ----------
 function normalize(){
   D.cakes.forEach(c=>{if(c.active===undefined)c.active=true;if(c.made3===undefined)c.made3=n(c.sold3)});
   D.sales.forEach(s=>{if(s.made===undefined)s.made=n(s.qty)});
 }
-// cakes actually produced: if "made" is blank/less than sold, assume made = sold
 const madeEff=(made,sold)=>Math.max(n(made),n(sold));
-function addCake(){D.cakes.push({id:uid(),name:'New cake',ing:0,cook:0,pack:0,price:0,made3:0,sold3:0,active:true});save();render();}
-function delCake(id){if(!confirm('Delete this cake? Its sales log entries will be removed too.\n(Tip: untick Active instead to keep it but exclude it from totals.)'))return;D.cakes=D.cakes.filter(c=>c.id!==id);D.sales=D.sales.filter(s=>s.cakeId!==id);save();render();}
+function addCake(){D.cakes.push({id:uid(),name:t('newCake'),ing:0,cook:0,pack:0,price:0,made3:0,sold3:0,active:true});save();render();}
+function delCake(id){if(!confirm(t('confirmDelCake')))return;D.cakes=D.cakes.filter(c=>c.id!==id);D.sales=D.sales.filter(s=>s.cakeId!==id);save();render();}
 function updCake(id,k,v){const c=D.cakes.find(c=>c.id===id);if(!c)return;c[k]=k==='name'?v:k==='active'?!!v:n(v);save();if(k==='active'){document.querySelector(`tr[data-id="${id}"]`).classList.toggle('inactive',!c.active)}renderCalc();}
 
 function renderCakes(){
@@ -266,7 +323,7 @@ function renderCakes(){
   D.cakes.forEach(c=>{
     const tr=document.createElement('tr');tr.dataset.id=c.id;if(!c.active)tr.className='inactive';
     tr.innerHTML=`
-      <td style="text-align:center"><input type="checkbox" ${c.active?'checked':''} title="Include in totals" onchange="updCake('${c.id}','active',this.checked)"></td>
+      <td style="text-align:center"><input type="checkbox" ${c.active?'checked':''} onchange="updCake('${c.id}','active',this.checked)"></td>
       <td><input class="name" value="${esc(c.name)}" oninput="updCake('${c.id}','name',this.value)"></td>
       <td><input type="number" step="0.001" min="0" value="${c.ing}" oninput="updCake('${c.id}','ing',this.value)"></td>
       <td><input type="number" step="0.001" min="0" value="${c.cook}" oninput="updCake('${c.id}','cook',this.value)"></td>
@@ -299,10 +356,10 @@ function renderCalc(){
     set('cost',fmt(co));set('profit',fmt(pr),cls(pr));set('margin',pct(m),cls(pr));
     set('unsold',unsold,unsold>0?'warn':'');set('rev3',fmt(rev3));set('waste',waste>0?'-'+fmt(waste):fmt(0),waste>0?'bad':'');
     set('prof3',fmt(prof3),cls(prof3));set('month',fmt(month),cls(month));
-    if(!c.active)return; // excluded from totals
+    if(!c.active)return;
     tMade+=made;tSold+=sold;tUnsold+=unsold;tRev+=rev3;tWaste+=waste;tProf+=prof3;tMonth+=month;
   });
-  document.querySelector('#cakeTable tfoot').innerHTML=`<tr><td></td><td>Total (active)</td><td></td><td></td><td></td><td></td><td>${tMade}</td><td>${tSold}</td><td class="${tUnsold>0?'bad':''}">${tUnsold}</td><td></td><td></td><td></td><td>${fmt(tRev)}</td><td class="${tWaste>0?'bad':''}">${tWaste>0?'-':''}${fmt(tWaste)}</td><td class="${cls(tProf)}">${fmt(tProf)}</td><td class="${cls(tMonth)}">${fmt(tMonth)}</td><td></td></tr>`;
+  document.querySelector('#cakeTable tfoot').innerHTML=`<tr><td></td><td>${t('totalActive')}</td><td></td><td></td><td></td><td></td><td>${tMade}</td><td>${tSold}</td><td class="${tUnsold>0?'bad':''}">${tUnsold}</td><td></td><td></td><td></td><td>${fmt(tRev)}</td><td class="${tWaste>0?'bad':''}">${tWaste>0?'-':''}${fmt(tWaste)}</td><td class="${cls(tProf)}">${fmt(tProf)}</td><td class="${cls(tMonth)}">${fmt(tMonth)}</td><td></td></tr>`;
   renderProjection({tMade,tSold,tUnsold,tRev,tWaste,tProf,tMonth,periods});
   renderSalesSelect();
   renderSales();
@@ -310,19 +367,19 @@ function renderCalc(){
 function renderProjection({tMade,tSold,tUnsold,tRev,tWaste,tProf,tMonth,periods}){
   const rent=n(D.settings.rent),fixed=n(D.settings.fixed),net=tMonth-rent-fixed;
   document.getElementById('projTiles').innerHTML=`
-    <div class="tile"><div class="l">Cakes made / month</div><div class="v">${Math.round(tMade*periods)}</div></div>
-    <div class="tile"><div class="l">Cakes sold / month</div><div class="v">${Math.round(tSold*periods)}</div></div>
-    <div class="tile"><div class="l">Unsold cakes / month</div><div class="v ${tUnsold>0?'bad':''}">${Math.round(tUnsold*periods)}</div><div class="l" style="margin-top:4px">loss ${fmt(tWaste*periods)}</div></div>
-    <div class="tile"><div class="l">Revenue / month</div><div class="v">${fmt(tRev*periods)}</div></div>
-    <div class="tile"><div class="l">Gross profit / month<br><small>after unsold loss</small></div><div class="v ${cls(tMonth)}">${fmt(tMonth)}</div></div>
-    <div class="tile"><div class="l">Shelf rent + fixed costs</div><div class="v bad">-${fmt(rent+fixed)}</div></div>
-    <div class="tile big"><div class="l">NET ${net>=0?'PROFIT':'LOSS'} / month</div><div class="v ${net>=0?'good':'bad'}">${fmt(net)}</div></div>`;
+    <div class="tile"><div class="l">${t('madeM')}</div><div class="v">${Math.round(tMade*periods)}</div></div>
+    <div class="tile"><div class="l">${t('soldM')}</div><div class="v">${Math.round(tSold*periods)}</div></div>
+    <div class="tile"><div class="l">${t('unsoldM')}</div><div class="v ${tUnsold>0?'bad':''}">${Math.round(tUnsold*periods)}</div><div class="l" style="margin-top:4px">${t('loss')} ${fmt(tWaste*periods)}</div></div>
+    <div class="tile"><div class="l">${t('revM')}</div><div class="v">${fmt(tRev*periods)}</div></div>
+    <div class="tile"><div class="l">${t('grossM')}</div><div class="v ${cls(tMonth)}">${fmt(tMonth)}</div></div>
+    <div class="tile"><div class="l">${t('rentFixed')}</div><div class="v bad">-${fmt(rent+fixed)}</div></div>
+    <div class="tile big"><div class="l">${net>=0?t('netProfit'):t('netLoss')}</div><div class="v ${net>=0?'good':'bad'}">${fmt(net)}</div></div>`;
   const act=D.cakes.filter(c=>c.active);
   const avgProfit=tSold?tProf/tSold:act.length?act.reduce((a,c)=>a+profit(c),0)/act.length:0;
   const be=document.getElementById('breakEven');
-  if(avgProfit>0){const cakes=Math.ceil((rent+fixed)/avgProfit);be.innerHTML=`<b>Break-even:</b> you need to sell about <b>${cakes} cakes / month</b> (≈ ${(cakes/periods).toFixed(1)} per 3 days) just to cover rent and fixed costs, at an average net profit of ${fmt(avgProfit)} per sold cake${tUnsold>0?' (after unsold losses)':''}.`}
-  else if(act.length===0)be.textContent='No active cakes. Tick "Active" on at least one cake.';
-  else be.textContent='Enter prices and costs to see your break-even point.';
+  if(avgProfit>0){const cakes=Math.ceil((rent+fixed)/avgProfit);be.innerHTML=t('breakEven')(cakes,(cakes/periods).toFixed(1),fmt(avgProfit),tUnsold>0)}
+  else if(act.length===0)be.textContent=t('noActive');
+  else be.textContent=t('enterPrices');
 }
 
 // ---------- sales log ----------
@@ -336,9 +393,8 @@ function addSale(){
   const date=document.getElementById('sDate').value,cakeId=document.getElementById('sCake').value;
   const qty=n(document.getElementById('sQty').value),madeIn=document.getElementById('sMade').value;
   const made=madeIn===''?qty:madeEff(madeIn,qty);
-  if(!date||!cakeId||(qty<=0&&made<=0)){alert('Pick a date, a cake and how many were made / sold.');return}
+  if(!date||!cakeId||(qty<=0&&made<=0)){alert(t('pickAll'));return}
   const c=D.cakes.find(x=>x.id===cakeId);
-  // snapshot price/cost at time of sale so later edits don't rewrite history
   D.sales.push({id:uid(),date,cakeId,made,qty,price:n(c.price),cost:cost(c)});
   save();
   document.getElementById('sMade').value='';
@@ -361,31 +417,30 @@ function renderSales(){
     const c=D.cakes.find(x=>x.id===s.cakeId);
     const md=madeEff(s.made,s.qty),un=md-s.qty,r=s.price*s.qty,k=s.cost*md,w=s.cost*un,p=r-k;
     made+=md;qty+=s.qty;unsold+=un;rev+=r;co+=k;waste+=w;
-    return `<tr><td>${s.date}</td><td style="text-align:left">${c?esc(c.name):'(deleted)'}</td><td>${md}</td><td>${s.qty}</td><td class="${un>0?'warn':''}">${un}</td><td>${fmt(r)}</td><td>${fmt(k)}</td><td class="${w>0?'bad':''}">${w>0?'-':''}${fmt(w)}</td><td class="${cls(p)}">${fmt(p)}</td><td><button class="del" onclick="delSale('${s.id}')">✕</button></td></tr>`;
-  }).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--muted)">No entries recorded for this month yet.</td></tr>';
+    return `<tr><td>${s.date}</td><td>${c?esc(c.name):t('deleted')}</td><td>${md}</td><td>${s.qty}</td><td class="${un>0?'warn':''}">${un}</td><td>${fmt(r)}</td><td>${fmt(k)}</td><td class="${w>0?'bad':''}">${w>0?'-':''}${fmt(w)}</td><td class="${cls(p)}">${fmt(p)}</td><td><button class="del" onclick="delSale('${s.id}')">✕</button></td></tr>`;
+  }).join('')||`<tr><td colspan="10" style="text-align:center;color:var(--muted)">${t('noEntries')}</td></tr>`;
   const gross=rev-co,rent=n(D.settings.rent),fixed=n(D.settings.fixed),net=gross-rent-fixed;
   document.getElementById('actualTiles').innerHTML=`
-    <div class="tile"><div class="l">Cakes made</div><div class="v">${made}</div></div>
-    <div class="tile"><div class="l">Cakes sold</div><div class="v">${qty}</div></div>
-    <div class="tile"><div class="l">Unsold cakes</div><div class="v ${unsold>0?'bad':''}">${unsold}</div><div class="l" style="margin-top:4px">loss ${fmt(waste)}</div></div>
-    <div class="tile"><div class="l">Revenue</div><div class="v">${fmt(rev)}</div></div>
-    <div class="tile"><div class="l">Cost of all cakes made</div><div class="v bad">-${fmt(co)}</div></div>
-    <div class="tile"><div class="l">Gross profit</div><div class="v ${cls(gross)}">${fmt(gross)}</div></div>
-    <div class="tile"><div class="l">Rent + fixed costs</div><div class="v bad">-${fmt(rent+fixed)}</div></div>
-    <div class="tile big"><div class="l">ACTUAL NET ${net>=0?'PROFIT':'LOSS'} — ${monthName(m)}</div><div class="v ${net>=0?'good':'bad'}">${fmt(net)}</div></div>`;
+    <div class="tile"><div class="l">${t('cakesMade')}</div><div class="v">${made}</div></div>
+    <div class="tile"><div class="l">${t('cakesSold')}</div><div class="v">${qty}</div></div>
+    <div class="tile"><div class="l">${t('unsoldCakes')}</div><div class="v ${unsold>0?'bad':''}">${unsold}</div><div class="l" style="margin-top:4px">${t('loss')} ${fmt(waste)}</div></div>
+    <div class="tile"><div class="l">${t('revenue')}</div><div class="v">${fmt(rev)}</div></div>
+    <div class="tile"><div class="l">${t('costAllMade')}</div><div class="v bad">-${fmt(co)}</div></div>
+    <div class="tile"><div class="l">${t('gross')}</div><div class="v ${cls(gross)}">${fmt(gross)}</div></div>
+    <div class="tile"><div class="l">${t('rentFixed2')}</div><div class="v bad">-${fmt(rent+fixed)}</div></div>
+    <div class="tile big"><div class="l">${net>=0?t('actualNetProfit'):t('actualNetLoss')} — ${monthName(m)}</div><div class="v ${net>=0?'good':'bad'}">${fmt(net)}</div></div>`;
 }
-function monthName(m){const [y,mo]=m.split('-');return new Date(y,mo-1,1).toLocaleString(undefined,{month:'long',year:'numeric'})}
+function monthName(m){const [y,mo]=m.split('-');return new Date(y,mo-1,1).toLocaleString(t('locale'),{month:'long',year:'numeric'})}
 
 // ---------- backup ----------
 function exportData(){const a=document.createElement('a');a.href='data:application/json,'+encodeURIComponent(JSON.stringify(D,null,2));a.download='cake-profit-backup-'+today()+'.json';a.click();}
-function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d.cakes||!d.settings)throw 0;if(!confirm('Replace everything on screen with the backup file '+f.name+'?'))return;D=d;try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){};if(USER)await saveToCloud();location.reload()}catch(e){alert('Invalid backup file')}};r.readAsText(f);inp.value='';}
-async function resetAll(){if(confirm('Delete ALL cakes, settings and sales? This cannot be undone.')){D=defaults();try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){};if(USER)await saveToCloud();location.reload()}}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d.cakes||!d.settings)throw 0;if(!confirm(t('confirmImport')+f.name+'?'))return;D=d;try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){};if(USER)await saveToCloud();location.reload()}catch(e){alert(t('invalidBackup'))}};r.readAsText(f);inp.value='';}
+async function resetAll(){if(confirm(t('confirmReset'))){D=defaults();try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){};if(USER)await saveToCloud();location.reload()}}
 
 function render(){fillSettings();renderCakes()}
+applyLang();
 render();
 initStorage();
 </script>
-</div>
 </body>
 </html>
