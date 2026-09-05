@@ -212,7 +212,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh)});
   document.title=t('title');
 }
-function toggleLang(){LANG=LANG==='en'?'ar':'en';try{localStorage.setItem('cakeLang',LANG)}catch(e){};applyLang();if(USER)render();}
+function toggleLang(){LANG=LANG==='en'?'ar':'en';try{localStorage.setItem('cakeLang',LANG)}catch(e){};applyLang();render();}
 
 // ---------- data ----------
 const KEY='cakeProfitData_v1';
